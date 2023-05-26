@@ -1,8 +1,10 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+
 class TranslationService {
   Future<String> translateText(String text) async {
+
     final url = Uri.parse('https://api-free.deepl.com/v2/translate');
     final headers = {
       'Authorization': 'DeepL-Auth-Key 675c8b5e-0efb-c06a-4caf-387862d75b6a:fx',

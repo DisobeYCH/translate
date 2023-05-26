@@ -1,5 +1,5 @@
 // main.dart
-@pragma('utf-8')
+/// @pragma('utf-8')
 import 'package:flutter/material.dart';
 import 'package:translatev4/screens/home_page.dart';
 
@@ -12,6 +12,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
