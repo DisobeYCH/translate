@@ -23,6 +23,8 @@ class _MyHomePageState extends State<MyHomePage> {
   TranslationService translationService = TranslationService();
   LocationService locationService = LocationService();
   String countryCode = '';
+  String dropdownValue = 'Option 1';
+  List<String> dropdownOptions = ['Selectionner langue', 'Option 2', 'Option 3'];
 
   @override
   void initState() {
@@ -74,15 +76,46 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(
+          0xFFffffff), // Utilisez la valeur hexadécimale avec le préfixe "0xFF"
+// Remplacez par la couleur de fond souhaitée
+
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Center(
+          child: Text(
+            widget.title,
+            style: TextStyle(
+              color: const Color.fromARGB(255, 255, 255, 255),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        elevation: 0,
+        backgroundColor: Color(0xFFe63946),
       ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
+              SizedBox(height: 40),
+              Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color:
+                        image != null ? Color(0xFF1d3557) : Color(0xFF1d3557),
+                  ),
+                ),
+                child: Center(
+                  child: image != null
+                      ? Image.file(image!)
+                      : Text("Aucune image sélectionnée"),
+                ),
+              ),
+              SizedBox(height: 10),
               SizedBox(
-                width: 300, // Remplacez la valeur par la largeur souhaitée
+                width: 300,
                 child: ImagePickerButton(
                   onPressed: () async {
                     final result =
@@ -96,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
               SizedBox(
-                width: 300, // Remplacez la valeur par la largeur souhaitée
+                width: 300,
                 child: ImagePickerButton(
                   onPressed: () async {
                     final result =
@@ -109,11 +142,59 @@ class _MyHomePageState extends State<MyHomePage> {
                   label: 'Prendre une photo',
                 ),
               ),
-              image != null
-                  ? Image.file(image!)
-                  : Text("Aucune image sélectionnée"),
-              Text(translatedText != '' ? translatedText : ''),
-              Text("Code ISO du pays : $countryCode"),
+              SizedBox(height: 10),
+              Container(
+                width: 300,
+                height: 35,
+                decoration: BoxDecoration(
+                  color: Color(0xFF1d3557),
+                ),
+                child: Center(
+                  child: DropdownButton<String>(
+                    value: dropdownValue,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        dropdownValue = newValue!;
+                      });
+                    },
+                    items: dropdownOptions.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        
+                        child: Center(
+                          child: Text(
+                            value,
+                            style: TextStyle(
+                          
+                              color: Color.fromARGB(255, 255, 255, 255),
+                            ),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+              Container(
+                width: 300,
+                padding: EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: image != null
+                        ? Color(0xFFe63946)
+                        : Color.fromARGB(0, 255, 252, 252),
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    children: [
+                      SizedBox(height: 10),
+                      Text(translatedText != '' ? translatedText : ''),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -134,11 +215,11 @@ class ImagePickerButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
-      color: Colors.blue,
+      color: Color(0xFF1d3557),
       child: Text(
         label,
         style: TextStyle(
-          color: Colors.white70,
+          color: Color.fromARGB(255, 255, 255, 255),
           fontWeight: FontWeight.bold,
         ),
       ),
