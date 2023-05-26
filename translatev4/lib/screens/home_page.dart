@@ -2,11 +2,10 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:translatev4/services/translation_service.dart';
-import 'package:country_codes/country_codes.dart';
-
+import 'package:translatev4/services/location_service.dart';
+import 'package:translatev4/services/image_picker_service.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -17,41 +16,18 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-
-
-
   File? image;
   String textResult = '';
-  String translatedText = ''; // Nouvelle variable pour le texte traduit
+  String translatedText = '';
   TextRecognizer textDetector = GoogleMlKit.vision.textRecognizer();
-  TranslationService translationService = TranslationService(); // Instance du service de traduction
+  TranslationService translationService = TranslationService();
+  LocationService locationService = LocationService();
+  String countryCode = '';
 
-  Future pickImage() async {
-    try {
-      final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-      if (image == null) return;
-      final imageTemp = File(image.path);
-      setState(() => this.image = imageTemp);
-      await detectText();
-    } on PlatformException catch (e) {
-      print('Failed to pick image: $e');
-    }
-  }
-
-  Future pickImageC() async {
-    try {
-      final image = await ImagePicker().pickImage(source: ImageSource.camera);
-
-      if (image == null) return;
-
-      final imageTemp = File(image.path);
-
-      setState(() => this.image = imageTemp);
-
-      await detectText();
-    } on PlatformException catch (e) {
-      print('Failed to pick image: $e');
-    }
+  @override
+  void initState() {
+    super.initState();
+    getLocation();
   }
 
   Future<void> detectText() async {
@@ -70,7 +46,6 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
-    // Appeler la méthode de traduction
     await translateText();
 
     setState(() {});
@@ -80,6 +55,13 @@ class _MyHomePageState extends State<MyHomePage> {
     final translatedText = await translationService.translateText(textResult);
     setState(() {
       this.translatedText = translatedText;
+    });
+  }
+
+  Future<void> getLocation() async {
+    String countryCode = await locationService.getCountryCode();
+    setState(() {
+      this.countryCode = countryCode;
     });
   }
 
@@ -93,42 +75,74 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Image Picker Example"),
+        title: Text(widget.title),
       ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
-              MaterialButton(
-                color: Colors.blue,
-                child: const Text(
-                  "Choisir une image de la galerie",
-                  style: TextStyle(
-                      color: Colors.white70, fontWeight: FontWeight.bold),
+              SizedBox(
+                width: 300, // Remplacez la valeur par la largeur souhaitée
+                child: ImagePickerButton(
+                  onPressed: () async {
+                    final result =
+                        await ImagePickerService.pickImageFromGallery();
+                    setState(() {
+                      image = result;
+                    });
+                    await detectText();
+                  },
+                  label: 'Choisir une image de la galerie',
                 ),
-                onPressed: () {
-                  pickImage();
-                },
               ),
-              MaterialButton(
-                color: Colors.blue,
-                child: const Text(
-                  "Prendre une photo",
-                  style: TextStyle(
-                      color: Colors.white70, fontWeight: FontWeight.bold),
+              SizedBox(
+                width: 300, // Remplacez la valeur par la largeur souhaitée
+                child: ImagePickerButton(
+                  onPressed: () async {
+                    final result =
+                        await ImagePickerService.pickImageFromCamera();
+                    setState(() {
+                      image = result;
+                    });
+                    await detectText();
+                  },
+                  label: 'Prendre une photo',
                 ),
-                onPressed: () {
-                  pickImageC();
-                },
               ),
-              SizedBox(height: 20,),
-              image != null ? Image.file(image!) : Text("Aucune image sélectionnée"),
-              SizedBox(height: 20,),
-              Text(translatedText), // Afficher le texte traduit
+              image != null
+                  ? Image.file(image!)
+                  : Text("Aucune image sélectionnée"),
+              Text(translatedText != '' ? translatedText : ''),
+              Text("Code ISO du pays : $countryCode"),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class ImagePickerButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final String label;
+
+  const ImagePickerButton({
+    required this.onPressed,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialButton(
+      color: Colors.blue,
+      child: Text(
+        label,
+        style: TextStyle(
+          color: Colors.white70,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      onPressed: onPressed,
     );
   }
 }
