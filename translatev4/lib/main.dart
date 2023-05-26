@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -35,7 +37,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   File? image;
-  String textResult = ''; // Variable pour stocker le résultat du texte
+  String translatedText = ''; // Variable pour stocker le texte traduit
   TextRecognizer textDetector = GoogleMlKit.vision.textRecognizer();
 
   Future pickImage() async {
@@ -78,19 +80,58 @@ class _MyHomePageState extends State<MyHomePage> {
     final inputImage = InputImage.fromFile(image!);
     final result = await textDetector.processImage(inputImage);
 
-    // Réinitialiser le résultat du texte
-    textResult = '';
+    // Réinitialiser le texte traduit
+    translatedText = '';
 
     for (TextBlock block in result.blocks) {
       for (TextLine line in block.lines) {
         for (TextElement element in line.elements) {
-          textResult += element.text + ' '; // Ajouter l'élément de texte au résultat avec un espace
+          translatedText += element.text + ' '; // Ajouter l'élément de texte traduit au résultat avec un espace
         }
       }
     }
 
-    setState(() {}); // Mettre à jour l'interface utilisateur avec le résultat du texte
+    // Envoyer la requête HTTP avec les paramètres spécifiés
+    await sendTranslationRequest(translatedText);
+
+    setState(() {}); // Mettre à jour l'interface utilisateur avec le texte traduit
   }
+
+Future<void> sendTranslationRequest(String text) async {
+  final url = Uri.parse('https://api-free.deepl.com/v2/translate');
+  final headers = {
+    'Authorization': 'DeepL-Auth-Key 675c8b5e-0efb-c06a-4caf-387862d75b6a:fx',
+    'User-Agent': 'YourApp/1.2.3',
+    'Content-Type': 'application/x-www-form-urlencoded',
+  };
+  final body = {
+    'text': text,
+    'target_lang': 'DE',
+  };
+
+  final response = await http.post(
+    url,
+    headers: headers,
+    body: body,
+  );
+
+  if (response.statusCode == 200) {
+    // Traitement de la réponse ici
+    final jsonResponse = jsonDecode(response.body);
+    final translations = jsonResponse['translations'] as List<dynamic>;
+    if (translations.isNotEmpty) {
+      final translatedText = translations[0]['text'];
+      setState(() {
+        this.translatedText = translatedText;
+      });
+    }
+  } else {
+    setState(() {
+      translatedText = 'Erreur lors de l\'envoi de la requête : ${response.statusCode}';
+    });
+  }
+}
+
 
   @override
   void dispose() {
@@ -104,7 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: const Text("Image Picker Example"),
       ),
-      body: SingleChildScrollView( // Ajouter une barre de défilement pour le corps de l'application
+      body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
@@ -133,7 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
               SizedBox(height: 20,),
               image != null ? Image.file(image!) : Text("Aucune image sélectionnée"),
               SizedBox(height: 20,),
-              Text(textResult), // Afficher le résultat du texte sur une seule ligne
+              Text(translatedText),
             ],
           ),
         ),
