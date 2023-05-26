@@ -24,7 +24,7 @@ class _MyHomePageState extends State<MyHomePage> {
   LocationService locationService = LocationService();
   String countryCode = '';
   String dropdownValue = 'Option 1';
-  List<String> dropdownOptions = ['Selectionner langue', 'Option 2', 'Option 3'];
+  List<String> dropdownOptions = ['Option 1', 'Option 2', 'Option 3'];
 
   @override
   void initState() {
@@ -160,12 +160,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     items: dropdownOptions.map((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
-                        
                         child: Center(
                           child: Text(
                             value,
                             style: TextStyle(
-                          
+                              backgroundColor: Color(0xFF1d3557),
                               color: Color.fromARGB(255, 255, 255, 255),
                             ),
                           ),
