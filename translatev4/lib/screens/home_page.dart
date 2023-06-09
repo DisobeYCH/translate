@@ -7,6 +7,7 @@ import 'package:translatev4/services/translation_service.dart';
 import 'package:translatev4/services/location_service.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'dart:async';
+import 'package:translatev4/services/image_picker_service.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -48,22 +49,26 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  Future<void> detectText() async {
-    if (image == null) return;
-    final inputImage = InputImage.fromFile(image!);
-    final result = await textDetector.processImage(inputImage);
-    textResult = '';
-    for (TextBlock block in result.blocks) {
-      for (TextLine line in block.lines) {
-        for (TextElement element in line.elements) {
-          textResult += element.text + ' ';
-        }
+Future<void> detectText() async {
+  if (image == null) return;
+  final inputImage = InputImage.fromFile(image!);
+  final result = await textDetector.processImage(inputImage);
+  textResult = '';
+  for (TextBlock block in result.blocks) {
+    for (TextLine line in block.lines) {
+      for (TextElement element in line.elements) {
+        textResult += element.text + ' ';
       }
     }
-    await translateText();
-
-    setState(() {});
   }
+  setState(() {});
+  await translateText();
+
+  setState(() {
+textController.text = textResult;
+  });
+}
+
 
   Future<void> translateText() async {
     final translatedText = await translationService.translateText(
@@ -94,7 +99,7 @@ class _MyHomePageState extends State<MyHomePage> {
       case "Allemand":
         return "DE";
       default:
-        return "Error";
+        return "Error le language selectionné n'existe pas";
     }
   }
 
@@ -199,16 +204,36 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment
-                  .spaceAround, // Centrer les icônes horizontalement
-              children: [
-                Icon(CupertinoIcons
-                    .photo_fill_on_rectangle_fill), // Icône Google
-                SizedBox(width: 10), // Espacement horizontal entre les icônes
-                Icon(CupertinoIcons
-                    .photo_camera), // Icône Google Photosacez "icon2" par l'icône souhaitée
-              ],
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                  horizontal: 40), // Ajoute une marge horizontale de 20 pixels
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ImagePickerButton(
+                    onPressed: () async {
+                      final result =
+                          await ImagePickerService.pickImageFromGallery();
+                      setState(() {
+                        image = result;
+                      });
+                      await detectText();
+                    },
+                    icon: CupertinoIcons.photo_fill_on_rectangle_fill,
+                  ),
+                  ImagePickerButton(
+                    onPressed: () async {
+                      final result =
+                          await ImagePickerService.pickImageFromCamera();
+                      setState(() {
+                        image = result;
+                      });
+                      await detectText();
+                    },
+                    icon: CupertinoIcons.photo_camera,
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -219,23 +244,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
 class ImagePickerButton extends StatelessWidget {
   final VoidCallback onPressed;
-  final String label;
+  final IconData icon;
+  final double width; // Ajoutez cette ligne
 
   const ImagePickerButton({
     required this.onPressed,
-    required this.label,
+    required this.icon,
+    this.width =
+        40, // Définissez une valeur par défaut pour la largeur du bouton
   });
 
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
+      minWidth: width, // Utilisez la contrainte de largeur fournie
+      height: 40, // Définissez la hauteur du bouton selon vos besoins
       color: Color(0xFF1d3557),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: Color.fromARGB(255, 255, 255, 255),
-          fontWeight: FontWeight.bold,
-        ),
+      child: Icon(
+        icon,
+        color: Color.fromARGB(255, 255, 255, 255),
+        size: 20,
       ),
       onPressed: onPressed,
     );
