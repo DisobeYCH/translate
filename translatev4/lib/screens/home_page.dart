@@ -35,6 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
+    getLocation();
     super.initState();
     textController.addListener(() async {
       await Future.delayed(Duration(seconds: 2)); // Attendre 2 secondes
@@ -80,15 +81,18 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   String obtenirCodeIso(String? libele) {
+    if (libele == "Localisation") {
+      if (countryCode == "CH") {
+        libele = "Français";
+      }
+    }
     switch (libele) {
-      case "Localisation":
-        return countryCode;
-      case "Francais":
+      case "Français":
         return "FR";
       case "Anglais":
         return "EN";
       case "Allemand":
-        return "DEU";
+        return "DE";
       default:
         return "Error";
     }
@@ -139,6 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     setState(() {
                       selectedValue = value as String;
                     });
+                    translateText();
                   },
                   buttonStyleData: const ButtonStyleData(
                     height: 40,

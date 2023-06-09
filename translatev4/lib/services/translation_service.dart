@@ -13,7 +13,7 @@ class TranslationService {
     };
     final body = {
       'text': text,
-      'target_lang': 'FR',
+      'target_lang': isoCode,
     };
 
     final response = await http.post(
