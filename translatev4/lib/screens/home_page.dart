@@ -2,13 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:translatev4/services/translation_service.dart';
 import 'package:translatev4/services/location_service.dart';
-import 'package:translatev4/services/image_picker_service.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:cupertino_icons/cupertino_icons.dart';
+import 'dart:async';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -38,7 +36,13 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    textController.addListener(() {
+    textController.addListener(() async {
+      await Future.delayed(Duration(seconds: 2)); // Attendre 2 secondes
+
+      setState(() {
+        textResult = textController.text;
+      });
+
       translateText();
     });
   }
@@ -61,8 +65,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> translateText() async {
-    final translatedText =
-        await translationService.translateText(textResult, obtenirCodeIso(selectedValue));
+    final translatedText = await translationService.translateText(
+        textResult, obtenirCodeIso(selectedValue));
     setState(() {
       this.translatedText = translatedText;
     });
@@ -191,12 +195,14 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
             child: Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.spaceAround, // Centrer les icônes horizontalement
+              mainAxisAlignment: MainAxisAlignment
+                  .spaceAround, // Centrer les icônes horizontalement
               children: [
-                Icon(CupertinoIcons.photo_fill_on_rectangle_fill), // Icône Google
+                Icon(CupertinoIcons
+                    .photo_fill_on_rectangle_fill), // Icône Google
                 SizedBox(width: 10), // Espacement horizontal entre les icônes
-                Icon(CupertinoIcons.photo_camera), // Icône Google Photosacez "icon2" par l'icône souhaitée
+                Icon(CupertinoIcons
+                    .photo_camera), // Icône Google Photosacez "icon2" par l'icône souhaitée
               ],
             ),
           ),
