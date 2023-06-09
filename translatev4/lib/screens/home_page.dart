@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:translatev4/services/translation_service.dart';
 import 'package:translatev4/services/location_service.dart';
 import 'package:translatev4/services/image_picker_service.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:cupertino_icons/cupertino_icons.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -23,23 +26,28 @@ class _MyHomePageState extends State<MyHomePage> {
   TranslationService translationService = TranslationService();
   LocationService locationService = LocationService();
   String countryCode = '';
-  String dropdownValue = 'Option 1';
-  List<String> dropdownOptions = ['Option 1', 'Option 2', 'Option 3'];
+  final List<String> items = [
+    'Localisation',
+    'Français',
+    'Anglais',
+    'Allemand',
+  ];
+  String? selectedValue = 'Localisation';
+  TextEditingController textController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    getLocation();
+    textController.addListener(() {
+      translateText();
+    });
   }
 
   Future<void> detectText() async {
     if (image == null) return;
-
     final inputImage = InputImage.fromFile(image!);
     final result = await textDetector.processImage(inputImage);
-
     textResult = '';
-
     for (TextBlock block in result.blocks) {
       for (TextLine line in block.lines) {
         for (TextElement element in line.elements) {
@@ -47,14 +55,14 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       }
     }
-
     await translateText();
 
     setState(() {});
   }
 
   Future<void> translateText() async {
-    final translatedText = await translationService.translateText(textResult);
+    final translatedText =
+        await translationService.translateText(textResult, obtenirCodeIso(selectedValue));
     setState(() {
       this.translatedText = translatedText;
     });
@@ -65,6 +73,21 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       this.countryCode = countryCode;
     });
+  }
+
+  String obtenirCodeIso(String? libele) {
+    switch (libele) {
+      case "Localisation":
+        return countryCode;
+      case "Francais":
+        return "FR";
+      case "Anglais":
+        return "EN";
+      case "Allemand":
+        return "DEU";
+      default:
+        return "Error";
+    }
   }
 
   @override
@@ -78,125 +101,106 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       backgroundColor: Color(
           0xFFffffff), // Utilisez la valeur hexadécimale avec le préfixe "0xFF"
-// Remplacez par la couleur de fond souhaitée
-
       appBar: AppBar(
-        title: Center(
-          child: Text(
-            widget.title,
-            style: TextStyle(
-              color: const Color.fromARGB(255, 255, 255, 255),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
         elevation: 0,
         backgroundColor: Color(0xFFe63946),
-      ),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            children: [
-              SizedBox(height: 40),
-              Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color:
-                        image != null ? Color(0xFF1d3557) : Color(0xFF1d3557),
+        toolbarHeight: 40, // Réduit la hauteur de la barre d'outils
+        title: Row(
+          mainAxisAlignment:
+              MainAxisAlignment.center, // Centrer les éléments horizontalement
+          children: [
+            Container(
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton2(
+                  hint: Text(
+                    'Localisation',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-                child: Center(
-                  child: image != null
-                      ? Image.file(image!)
-                      : Text("Aucune image sélectionnée"),
-                ),
-              ),
-              SizedBox(height: 10),
-              SizedBox(
-                width: 300,
-                child: ImagePickerButton(
-                  onPressed: () async {
-                    final result =
-                        await ImagePickerService.pickImageFromGallery();
-                    setState(() {
-                      image = result;
-                    });
-                    await detectText();
-                  },
-                  label: 'Choisir une image de la galerie',
-                ),
-              ),
-              SizedBox(
-                width: 300,
-                child: ImagePickerButton(
-                  onPressed: () async {
-                    final result =
-                        await ImagePickerService.pickImageFromCamera();
-                    setState(() {
-                      image = result;
-                    });
-                    await detectText();
-                  },
-                  label: 'Prendre une photo',
-                ),
-              ),
-              SizedBox(height: 10),
-              Container(
-                width: 300,
-                height: 35,
-                decoration: BoxDecoration(
-                  color: Color(0xFF1d3557),
-                ),
-                child: Center(
-                  child: DropdownButton<String>(
-                    value: dropdownValue,
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        dropdownValue = newValue!;
-                      });
-                    },
-                    items: dropdownOptions.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Center(
-                          child: Text(
-                            value,
-                            style: TextStyle(
-                              backgroundColor: Color(0xFF1d3557),
-                              color: Color.fromARGB(255, 255, 255, 255),
+                  items: items
+                      .map((item) => DropdownMenuItem<String>(
+                            value: item,
+                            child: Text(
+                              item,
+                              style: const TextStyle(
+                                fontSize: 14,
+                              ),
                             ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                          ))
+                      .toList(),
+                  value: selectedValue,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedValue = value as String;
+                    });
+                  },
+                  buttonStyleData: const ButtonStyleData(
+                    height: 40,
+                  ),
+                  menuItemStyleData: const MenuItemStyleData(
+                    height: 40,
                   ),
                 ),
               ),
-              SizedBox(height: 10),
-              Container(
-                width: 300,
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: image != null
-                        ? Color(0xFFe63946)
-                        : Color.fromARGB(0, 255, 252, 252),
-                  ),
-                ),
-                child: Center(
-                  child: Column(
-                    children: [
-                      SizedBox(height: 10),
-                      Text(translatedText != '' ? translatedText : ''),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+            )
+          ],
         ),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Container(
+              child: TextField(
+                controller: textController,
+                maxLines: null, // Permet un nombre de lignes dynamique
+                decoration: InputDecoration(
+                  border:
+                      InputBorder.none, // Supprime la bordure du champ de texte
+                  hintText: 'Saisissez du texte...', // Texte indicatif
+                ),
+              ),
+            ),
+          ),
+          Divider(
+            // Ligne de séparation grise
+            color: Color(0xFFe63946),
+            thickness: 1,
+          ),
+          Expanded(
+            flex: 2,
+            child: SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  translatedText,
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+            ),
+          ),
+          Container(
+            height: 50, // Hauteur du pied de page
+            decoration: BoxDecoration(
+              border: Border(
+                top: BorderSide(
+                  color: Color(0xFFe63946), // Couleur de la bordure grise
+                  width: 1.0, // Épaisseur de la bordure
+                ),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceAround, // Centrer les icônes horizontalement
+              children: [
+                Icon(CupertinoIcons.photo_fill_on_rectangle_fill), // Icône Google
+                SizedBox(width: 10), // Espacement horizontal entre les icônes
+                Icon(CupertinoIcons.photo_camera), // Icône Google Photosacez "icon2" par l'icône souhaitée
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

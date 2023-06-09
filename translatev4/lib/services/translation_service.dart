@@ -3,7 +3,7 @@ import 'dart:convert';
 
 
 class TranslationService {
-  Future<String> translateText(String text) async {
+  Future<String> translateText(String text,String? isoCode) async {
 
     final url = Uri.parse('https://api-free.deepl.com/v2/translate');
     final headers = {
@@ -13,7 +13,7 @@ class TranslationService {
     };
     final body = {
       'text': text,
-      'target_lang': 'DE',
+      'target_lang': isoCode,
     };
 
     final response = await http.post(
