@@ -1,43 +1,39 @@
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class LocationService {
   Future<String> getCountryCode() async {
     String countryCode = '';
 
-    PermissionStatus status = await Permission.locationWhenInUse.request();
-    if (status.isGranted) {
-      Position? position;
-      List<Placemark> placemarks = [];
+    try {
+      Position position = await getPosition();
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
 
-      try {
-        position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high,
-        );
-      } catch (e) {
-        print('Failed to get location: $e');
+      if (placemarks.isNotEmpty) {
+        Placemark placemark = placemarks[0];
+        countryCode = placemark.isoCountryCode ?? '';
       }
-
-      if (position != null) {
-        try {
-          placemarks = await placemarkFromCoordinates(
-            position.latitude,
-            position.longitude,
-          );
-        } catch (e) {
-          print('Failed to get placemarks: $e');
-        }
-
-        if (placemarks.isNotEmpty) {
-          Placemark placemark = placemarks[0];
-          countryCode = placemark.isoCountryCode ?? '';
-        }
-      }
-    } else {
-      print('Location permission denied');
+    } catch (e) {
+      print('Failed to get location: $e');
     }
 
     return countryCode;
+  }
+
+  Future<Position> getPosition() async {
+    try {
+      if (await Geolocator.isLocationServiceEnabled()) {
+        return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
+      } else {
+        throw Exception('Location service is not enabled');
+      }
+    } catch (e) {
+      throw Exception('Failed to get position: $e');
+    }
   }
 }

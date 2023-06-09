@@ -7,10 +7,13 @@ class TranslationService {
 
     final url = Uri.parse('https://api-free.deepl.com/v2/translate');
     final headers = {
+      
       'Authorization': 'DeepL-Auth-Key 675c8b5e-0efb-c06a-4caf-387862d75b6a:fx',
-      'User-Agent': 'YourApp/1.2.3',
       'Content-Type': 'application/x-www-form-urlencoded',
+      'Origine':'api-free.deepl.com',
     };
+
+    // This will accept request from 
     final body = {
       'text': text,
       'target_lang': isoCode,
