@@ -1,21 +1,25 @@
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:country_coder/country_coder.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class LocationService {
   Future<String> getCountryCode() async {
     String countryCode = '';
     final countries = CountryCoder.instance;
-    countries.load(); // initialize the instance, does nothing the second time
+    countries.load(); // initialise l'instance, ne fait rien la deuxième fois
 
-// Find a country's 2-letter ISO code by longitude and latitude
+    // Vérifier et demander l'autorisation d'accès à la localisation
+    LocationPermission status = await Geolocator.requestPermission();
 
-    try {
-      Position position = await getPosition();
-      countryCode = countries.iso1A2Code(
-          lon: position.longitude, lat: position.latitude) as String;
-    } catch (e) {
-      print('Failed to get location: $e');
+    // Vérifier si l'autorisation a été accordée
+    if (status == LocationPermission.whileInUse || status == LocationPermission.always) {
+      try {
+        Position position = await getPosition();
+        countryCode = countries.iso1A2Code(
+            lon: position.longitude, lat: position.latitude) as String;
+      } catch (e) {
+        print('Échec de l\'obtention de la localisation : $e');
+      }
     }
 
     return countryCode;
@@ -28,10 +32,10 @@ class LocationService {
           desiredAccuracy: LocationAccuracy.high,
         );
       } else {
-        throw Exception('Location service is not enabled');
+        throw Exception('Le service de localisation n\'est pas activé');
       }
     } catch (e) {
-      throw Exception('Failed to get position: $e');
+      throw Exception('Échec de l\'obtention de la position : $e');
     }
   }
 }

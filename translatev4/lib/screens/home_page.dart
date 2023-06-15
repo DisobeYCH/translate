@@ -49,26 +49,25 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-Future<void> detectText() async {
-  if (image == null) return;
-  final inputImage = InputImage.fromFile(image!);
-  final result = await textDetector.processImage(inputImage);
-  textResult = '';
-  for (TextBlock block in result.blocks) {
-    for (TextLine line in block.lines) {
-      for (TextElement element in line.elements) {
-        textResult += element.text + ' ';
+  Future<void> detectText() async {
+    if (image == null) return;
+    final inputImage = InputImage.fromFile(image!);
+    final result = await textDetector.processImage(inputImage);
+    textResult = '';
+    for (TextBlock block in result.blocks) {
+      for (TextLine line in block.lines) {
+        for (TextElement element in line.elements) {
+          textResult += element.text + ' ';
+        }
       }
     }
+    setState(() {});
+    await translateText();
+
+    setState(() {
+      textController.text = textResult;
+    });
   }
-  setState(() {});
-  await translateText();
-
-  setState(() {
-textController.text = textResult;
-  });
-}
-
 
   Future<void> translateText() async {
     final translatedText = await translationService.translateText(
@@ -166,8 +165,11 @@ textController.text = textResult;
         children: [
           Expanded(
             child: Container(
+              padding: const EdgeInsets.all(16),
               child: TextField(
                 controller: textController,
+                style: TextStyle(fontSize: 18),
+
                 maxLines: null, // Permet un nombre de lignes dynamique
                 decoration: InputDecoration(
                   border:
@@ -187,9 +189,12 @@ textController.text = textResult;
             child: SingleChildScrollView(
               child: Container(
                 padding: const EdgeInsets.all(16),
-                child: Text(
-                  translatedText,
-                  style: TextStyle(fontSize: 18),
+                child: Align(
+                  alignment: Alignment.centerLeft, // Aligner le texte à gauche
+                  child: Text(
+                    translatedText,
+                    style: TextStyle(fontSize: 18),
+                  ),
                 ),
               ),
             ),
