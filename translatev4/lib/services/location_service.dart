@@ -1,6 +1,5 @@
 import 'package:country_coder/country_coder.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class LocationService {
   Future<String> getCountryCode() async {

@@ -113,32 +113,38 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       backgroundColor: Color(
           0xFFffffff), // Utilisez la valeur hexadécimale avec le préfixe "0xFF"
+
       appBar: AppBar(
+        bottom: PreferredSize(
+            child: Container(
+              color: Color(0xFF00a6fb),
+              height: 1.0,
+            ),
+            preferredSize: Size.fromHeight(4.0)),
+
         elevation: 0,
-        backgroundColor: Color(0xFFe63946),
-        toolbarHeight: 40, // Réduit la hauteur de la barre d'outils
+        backgroundColor: Color.fromARGB(255, 255, 255, 255),
+        toolbarHeight: 60, // Réduit la hauteur de la barre d'outils
         title: Row(
           mainAxisAlignment:
               MainAxisAlignment.center, // Centrer les éléments horizontalement
           children: [
             Container(
               child: DropdownButtonHideUnderline(
+                // Cache la ligne de soulignement du bouton déroulant
                 child: DropdownButton2(
-                  hint: Text(
-                    'Localisation',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white,
-                    ),
-                  ),
+                  isExpanded: true,
                   items: items
                       .map((item) => DropdownMenuItem<String>(
                             value: item,
                             child: Text(
                               item,
                               style: const TextStyle(
-                                fontSize: 14,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF00a6fb),
                               ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ))
                       .toList(),
@@ -146,14 +152,26 @@ class _MyHomePageState extends State<MyHomePage> {
                   onChanged: (value) {
                     setState(() {
                       selectedValue = value as String;
+                      translateText();
                     });
-                    translateText();
                   },
-                  buttonStyleData: const ButtonStyleData(
-                    height: 40,
+                  buttonStyleData: ButtonStyleData(
+                    height: 50,
+                    width: 160,
                   ),
-                  menuItemStyleData: const MenuItemStyleData(
-                    height: 40,
+                  iconStyleData: const IconStyleData(
+                    icon: Icon(
+                      Icons.translate,
+                    ),
+                    iconSize: 25,
+                    iconEnabledColor: Color(0xFF00a6fb),
+                  ),
+                  dropdownStyleData: DropdownStyleData(
+                    width: 170,
+                    padding: null,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
               ),
@@ -161,54 +179,70 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
+
       body: Column(
         children: [
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(10),
               child: TextField(
                 controller: textController,
-                style: TextStyle(fontSize: 18),
-
                 maxLines: null, // Permet un nombre de lignes dynamique
                 decoration: InputDecoration(
                   border:
                       InputBorder.none, // Supprime la bordure du champ de texte
-                  hintText: 'Saisissez du texte...', // Texte indicatif
+                  hintText:
+                      "Ecrivez ou collez un texte, ou traduisez du\ncontenu depuis l'une des sources ci-dessous", // Texte indicatif
+                  suffixIcon: textController.text.isEmpty
+                      ? null // Si le texte est égal à hintText, le suffixIcon est nul (invisible)
+                      : IconButton(
+                          icon: Icon(
+                              Icons.clear), // Icône pour supprimer le texte
+                          onPressed: () {
+                            textController.clear(); // Effacer le texte
+                          },
+                        ),
                 ),
               ),
             ),
           ),
           Divider(
             // Ligne de séparation grise
-            color: Color(0xFFe63946),
+            color: Color(0xFF00a6fb),
             thickness: 1,
           ),
           Expanded(
-            flex: 2,
-            child: SingleChildScrollView(
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                child: Align(
-                  alignment: Alignment.centerLeft, // Aligner le texte à gauche
-                  child: Text(
-                    translatedText,
-                    style: TextStyle(fontSize: 18),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                readOnly: true, // Rend le champ de texte en lecture seule
+                controller: TextEditingController(text: translatedText),
+                decoration: InputDecoration(
+                  border: InputBorder.none, // Supprime la bordure
+                  suffixIcon: Visibility(
+                    visible: translatedText
+                        .isNotEmpty, // Affiche l'icône uniquement si translatedText n'est pas vide
+                    child: IconButton(
+                      icon: Icon(Icons.copy), // Icône de copie
+                      onPressed: () {
+                        // Logique pour copier le texte
+                        // Affichage d'un message ou d'une boîte de dialogue indiquant que le texte a été copié
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Texte copié !'),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
+                maxLines: null, // Permet un nombre de lignes dynamique
               ),
             ),
           ),
           Container(
             height: 50, // Hauteur du pied de page
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: Color(0xFFe63946), // Couleur de la bordure grise
-                  width: 1.0, // Épaisseur de la bordure
-                ),
-              ),
-            ),
+            decoration: BoxDecoration(),
             child: Padding(
               padding: EdgeInsets.symmetric(
                   horizontal: 40), // Ajoute une marge horizontale de 20 pixels
@@ -264,11 +298,11 @@ class ImagePickerButton extends StatelessWidget {
     return MaterialButton(
       minWidth: width, // Utilisez la contrainte de largeur fournie
       height: 40, // Définissez la hauteur du bouton selon vos besoins
-      color: Color(0xFF1d3557),
+
       child: Icon(
         icon,
-        color: Color.fromARGB(255, 255, 255, 255),
-        size: 20,
+        color: Color(0xFF00a6fb),
+        size: 40,
       ),
       onPressed: onPressed,
     );
