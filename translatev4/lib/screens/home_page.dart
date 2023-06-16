@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
     getLocation();
     super.initState();
     textController.addListener(() async {
-      await Future.delayed(Duration(seconds: 2)); // Attendre 2 secondes
+      await Future.delayed(Duration(seconds: 1)); // Attendre 2 secondes
 
       setState(() {
         textResult = textController.text;
