@@ -10,8 +10,16 @@ import 'package:translatev4/services/image_picker_service.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 
+/// La classe `MyHomePage` est un widget StatefulWidget représentant la page d'accueil de l'application.
+
 class MyHomePage extends StatefulWidget {
+  /// Constructeur de la classe `MyHomePage`.
+  ///
+  /// Le paramètre `title` est requis et représente le titre de la page d'accueil.
   const MyHomePage({Key? key, required this.title}) : super(key: key);
+
+  /// Le titre de la page d'accueil.
+
   final String title;
 
   @override
@@ -37,60 +45,107 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    getLocation();
-    super.initState();
+    // Méthode de cycle de vie de l'objet State qui est appelée lors de l'initialisation de l'état.
+    getLocation(); // Appelle la fonction pour obtenir la localisation.
+    super.initState(); // Appelle la méthode initState de la classe parente.
+
+    // Ajoute un écouteur au contrôleur de texte.
     textController.addListener(() async {
-      await Future.delayed(Duration(seconds: 1)); // Attendre 2 secondes
-
+      await Future.delayed(Duration(seconds: 1)); // Attend 1 seconde.
       setState(() {
-        textResult = textController.text;
+        textResult = textController
+            .text; // Met à jour la variable textResult avec le texte du contrôleur.
       });
-
-      translateText();
+      translateText(); // Appelle la fonction pour traduire le texte.
     });
   }
 
+  /// Cette fonction permet de détecter du texte dans une image et de le traduire.
   Future<void> detectText() async {
     if (image == null) return;
+
+    // Conversion de l'image en un objet InputImage
     final inputImage = InputImage.fromFile(image!);
+
+    // Traitement de l'image pour détecter le texte
     final result = await textDetector.processImage(inputImage);
+
+    // Initialisation de la variable textResult
     textResult = '';
+
+    // Parcours des blocs de texte détectés
     for (TextBlock block in result.blocks) {
+      // Parcours des lignes de texte dans chaque bloc
       for (TextLine line in block.lines) {
+        // Parcours des éléments de texte dans chaque ligne
         for (TextElement element in line.elements) {
+          // Concaténation du texte de chaque élément
           textResult += element.text + ' ';
         }
       }
     }
+
+    // Met à jour l'état de l'application
     setState(() {});
+
+    // Traduction du texte détecté
     await translateText();
 
+    // Met à jour l'état de l'application en assignant le texte détecté au contrôleur de texte
     setState(() {
       textController.text = textResult;
     });
   }
 
+  /// Méthode pour traduire du texte.
+  ///
+  /// Cette méthode utilise [translationService] pour traduire [textResult]
+  /// en utilisant le code ISO obtenu à partir de [selectedValue].
+  /// Le texte traduit est ensuite stocké dans [translatedText].
+  ///
+  /// Cette méthode retourne une [Future] sans valeur.
   Future<void> translateText() async {
     final translatedText = await translationService.translateText(
-        textResult, obtenirCodeIso(selectedValue));
+      textResult,
+      obtenirCodeIso(selectedValue),
+    );
+
     setState(() {
       this.translatedText = translatedText;
     });
   }
 
+  /// Obtient la localisation.
+  ///
+  /// Cette fonction utilise le service de localisation pour obtenir le code du pays.
+  /// Elle met à jour l'état de la variable [countryCode] avec le code de pays obtenu.
+  ///
+  /// Exemple d'utilisation :
+  /// ```dart
+  /// await getLocation();
+  /// print(countryCode); // Affiche le code du pays
+  /// ```
+  ///
+  /// Retour : [Future] sans valeur de retour.
   Future<void> getLocation() async {
+    // Obtient le code du pays à partir du service de localisation
     String countryCode = await locationService.getCountryCode();
+
+    // Met à jour l'état de la variable countryCode avec le code de pays obtenu
     setState(() {
       this.countryCode = countryCode;
     });
   }
 
+  /// Cette fonction prend en paramètre une chaîne de caractères [libele] qui représente un libellé de localisation.
+  /// Elle retourne le code ISO correspondant à la langue sélectionnée, ou une erreur si la langue n'est pas reconnue.
   String obtenirCodeIso(String? libele) {
     if (libele == "Localisation") {
       if (countryCode == "CH") {
         libele = "Français";
       }
     }
+
     switch (libele) {
       case "Français":
         return "FR";
@@ -99,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
       case "Allemand":
         return "DE";
       default:
-        return "Error le language selectionné n'existe pas";
+        return "Erreur : la langue sélectionnée n'existe pas";
     }
   }
 
@@ -226,7 +281,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: IconButton(
                       icon: Icon(Icons.copy), // Icône de copie
                       onPressed: () {
-                                Clipboard.setData(ClipboardData(text: translatedText));
+                        Clipboard.setData(ClipboardData(text: translatedText));
 
                         // Logique pour copier le texte
                         // Affichage d'un message ou d'une boîte de dialogue indiquant que le texte a été copié
@@ -296,7 +351,7 @@ class ImagePickerButton extends StatelessWidget {
         40, // Définissez une valeur par défaut pour la largeur du bouton
   });
 
-   @override
+  @override
   Widget build(BuildContext context) {
     // Vérifier si l'application s'exécute sur Flutter Web
     if (!kIsWeb) {
