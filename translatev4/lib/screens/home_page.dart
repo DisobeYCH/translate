@@ -8,6 +8,8 @@ import 'package:translatev4/services/location_service.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'dart:async';
 import 'package:translatev4/services/image_picker_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({Key? key, required this.title}) : super(key: key);
@@ -225,6 +227,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: IconButton(
                       icon: Icon(Icons.copy), // Icône de copie
                       onPressed: () {
+                                Clipboard.setData(ClipboardData(text: translatedText));
+
                         // Logique pour copier le texte
                         // Affichage d'un message ou d'une boîte de dialogue indiquant que le texte a été copié
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -293,18 +297,23 @@ class ImagePickerButton extends StatelessWidget {
         40, // Définissez une valeur par défaut pour la largeur du bouton
   });
 
-  @override
+   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
-      minWidth: width, // Utilisez la contrainte de largeur fournie
-      height: 40, // Définissez la hauteur du bouton selon vos besoins
-
-      child: Icon(
-        icon,
-        color: Color(0xFF00a6fb),
-        size: 40,
-      ),
-      onPressed: onPressed,
-    );
+    // Vérifier si l'application s'exécute sur Flutter Web
+    if (!kIsWeb) {
+      return MaterialButton(
+        minWidth: width,
+        height: 40,
+        child: Icon(
+          icon,
+          color: Color(0xFF00a6fb),
+          size: 40,
+        ),
+        onPressed: onPressed,
+      );
+    } else {
+      // Retourner un widget vide pour Flutter Web
+      return SizedBox();
+    }
   }
 }
